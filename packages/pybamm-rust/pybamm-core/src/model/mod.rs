@@ -12,6 +12,7 @@ mod sens;
 #[cfg(test)]
 pub(crate) mod test_fixtures;
 
+use std::cell::RefCell;
 use std::sync::Arc;
 
 use crate::arena::{Arena, DagRef, NodeId, ReadExtents, resolve_state_count};
@@ -112,17 +113,19 @@ impl Workspace {
 }
 
 /// A shared [`CompiledModel`] and one caller's [`Workspace`]: the `user_data` behind every
-/// [`crate::ffi`] entry point.
+/// [`crate::ffi`] entry point, and what the diffsol solver's operators evaluate through.
 #[derive(Debug)]
 pub struct ModelEvaluator {
     pub(crate) compiled: Arc<CompiledModel>,
-    pub(crate) workspace: Workspace,
+    /// A `RefCell` so operators sharing the evaluator borrow it per call; the FFI, which
+    /// holds the evaluator exclusively, reaches it with `get_mut`.
+    pub(crate) workspace: RefCell<Workspace>,
 }
 
 impl ModelEvaluator {
     /// Bind a fresh [`Workspace`] to an already-compiled model, without recompiling.
     pub fn from_compiled(compiled: Arc<CompiledModel>) -> Self {
-        let workspace = compiled.create_workspace();
+        let workspace = RefCell::new(compiled.create_workspace());
         Self {
             compiled,
             workspace,

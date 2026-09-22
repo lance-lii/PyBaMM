@@ -67,8 +67,8 @@ pub struct CompiledModel {
     /// Workspaces for the direct `eval_*`/`assemble_*` helpers.
     scratch_pool: ScratchPool<core_model::Workspace>,
     /// Retained derivation source for the bundle views and `PreparedSolver`.
-    graph: Py<ExprGraph>,
-    rhs_root: NodeId,
+    pub(crate) graph: Py<ExprGraph>,
+    pub(crate) rhs_root: NodeId,
     output_roots: Vec<NodeId>,
     event_roots: Vec<NodeId>,
     /// The algebraic block's root and its strictly-ascending global state indices.
